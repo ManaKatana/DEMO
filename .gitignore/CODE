@@ -1,0 +1,152 @@
+/*
+	These are simple defaults for your project.
+ */
+
+world
+	fps = 25		// 25 frames per second
+	icon_size = 32	// 32x32 icon size by default
+	view = 6		// show up to 6 tiles outward from center (13x13 view)
+	mob=/mob/Player
+
+
+mob
+	step_size = 8
+
+obj
+	step_size = 8
+
+mob/Player
+	Login()
+		loc=locate(1,1,1)
+	Logout()
+		del src
+
+
+
+mob/var
+	Str=1
+	ExtraDmg=0
+	Res=1
+	Pow=1
+	Hp=1
+	MaxHp=1
+	Mana=1
+	MaxMana=1
+
+//Drop Vars//
+	MoneyLoot=0
+	ExpLoot=0
+
+	Money=0
+
+	Exp=0
+	MaxExp=0
+
+	Level=0
+	Class="Null"
+
+turf/Grass
+	icon='Turf.dmi'
+
+mob/Enemy
+	Str=1
+	ExtraDmg=0
+	Res=1
+	Pow=1
+	Hp=10
+	MaxHp=10
+	Mana=1
+	MaxMana=1
+	icon='Mob.dmi'
+	icon_state = "2"
+	MoneyLoot=2
+	ExpLoot=2
+
+	Click()
+		usr << "HP: [src.Hp]"
+		usr << "Res: [src.Res]"
+		usr << "Str: [src.Str]"
+		usr << "Pow: [src.Pow]"
+
+mob/Player
+	Str=3
+	ExtraDmg=0
+	Res=1
+	Pow=1
+	Hp=20
+	MaxHp=20
+	Mana=1
+	MaxMana=1
+	icon='Mob.dmi'
+	icon_state = "1"
+	Exp=0
+	MaxExp=10
+	Money=0
+	Level=1
+	Class="Assasin"
+
+mob/Stat()
+    statpanel("[src]'s Stats")
+    stat("HP:","[src.Hp]/[src.MaxHp]")
+    stat("Dmg:","[src.Str] + [src.ExtraDmg]")
+    stat("Money:","[src.Money]")
+    stat("Exp:","[src.Exp] / [src.MaxExp]")
+
+
+
+mob/Player/verb/BasicAttack(mob as mob in oview(1))
+	DealingDmg(mob)
+
+mob/proc/SetDmg(mob/M)
+	return Str+ExtraDmg
+
+mob/proc/TakingDmg(mob/M)
+	return SetDmg(M)-M.Res
+
+mob/proc/DealingDmg(mob/M)
+	M.Hp-=src.TakingDmg(M)
+	DeathCheck(M)
+
+mob/proc/DeathCheck(mob/M)
+	if(M.Hp <= 0)
+		MoneyLoot(M)
+		ExpLoot(M)
+		del(M)
+	else
+		..
+
+mob/proc/MoneyLoot(mob/M)
+	src.Money+=M.MoneyLoot
+
+mob/proc/ExpLoot(mob/M)
+	src.Exp+=M.ExpLoot
+	LevelCheck(src)
+
+mob/proc/LevelCheck()
+	if(src.Exp >= src.MaxExp)
+		src.Level+=1
+		src.MaxExp*=2
+		ClassPoints()
+
+mob/proc/ClassPoints()
+	if(src.Class=="Assasin")
+		src.Str+=1
+		src.ExtraDmg+=0
+		src.Res+=0
+		src.Pow+=0
+		src.MaxHp+=0
+		src.MaxMana+=1
+	if(src.Class=="Mage")
+		src.Str+=0
+		src.ExtraDmg+=0
+		src.Res+=0
+		src.Pow+=1
+		src.MaxHp+=0
+		src.MaxMana+=1
+	if(src.Class=="Tank")
+		src.Str+=0
+		src.ExtraDmg+=0
+		src.Res+=0
+		src.Pow+=0
+		src.MaxHp+=1
+		src.MaxMana+=0
